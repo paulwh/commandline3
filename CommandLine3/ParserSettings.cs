@@ -24,9 +24,23 @@ namespace CommandLine {
 
         public bool AllowPrefixMatch { get; private set; }
 
-        public bool SupportFlags { get; private set; }
-
         public bool AutomaticHelpOutput { get; private set; }
+
+        internal StringComparison StringComparison {
+            get {
+                return this.CaseSensitive ?
+                    StringComparison.Ordinal :
+                    StringComparison.OrdinalIgnoreCase;
+            }
+        }
+
+        internal StringComparer StringComparer {
+            get {
+                return this.CaseSensitive ?
+                    StringComparer.Ordinal :
+                    StringComparer.OrdinalIgnoreCase;
+            }
+        }
 
         public ParserSettings(
             string longOptionPrefix = "--",
@@ -34,7 +48,6 @@ namespace CommandLine {
             bool ignoreUnknownArguments = false,
             bool caseSensitive = true,
             bool allowPrefixMatch = false,
-            bool supportFlags = true,
             bool automaticHelpOutput = true)
             : this(
                 Console.Error,
@@ -44,7 +57,6 @@ namespace CommandLine {
                 ignoreUnknownArguments,
                 caseSensitive,
                 allowPrefixMatch,
-                supportFlags,
                 automaticHelpOutput) {
         }
 
@@ -55,7 +67,6 @@ namespace CommandLine {
             bool ignoreUnknownArguments = false,
             bool caseSensitive = true,
             bool allowPrefixMatch = false,
-            bool supportFlags = true,
             bool automaticHelpOutput = true)
             : this(
                 helpWriter,
@@ -65,7 +76,6 @@ namespace CommandLine {
                 ignoreUnknownArguments,
                 caseSensitive,
                 allowPrefixMatch,
-                supportFlags,
                 automaticHelpOutput) {
         }
         public ParserSettings(
@@ -75,7 +85,6 @@ namespace CommandLine {
             bool ignoreUnknownArguments = false,
             bool caseSensitive = true,
             bool allowPrefixMatch = false,
-            bool supportFlags = true,
             bool automaticHelpOutput = true)
             : this(
                 Console.Error,
@@ -85,7 +94,6 @@ namespace CommandLine {
                 ignoreUnknownArguments,
                 caseSensitive,
                 allowPrefixMatch,
-                supportFlags,
                 automaticHelpOutput) {
         }
 
@@ -97,7 +105,6 @@ namespace CommandLine {
             bool ignoreUnknownArguments = false,
             bool caseSensitive = true,
             bool allowPrefixMatch = false,
-            bool supportFlags = true,
             bool automaticHelpOutput = true) {
         }
         
@@ -127,17 +134,15 @@ namespace CommandLine {
                         shortOptionPrefix: '-',
                         ignoreUnknownArguments: false,
                         caseSensitive: true,
-                        allowPrefixMatch: false,
-                        supportFlags: true
+                        allowPrefixMatch: false
                     );
                 case ArgumentStyle.Dos:
                     return new ParserSettings(
                         helpWriter,
                         parsingCulture,
                         longOptionPrefix: "/",
-                        shortOptionPrefix: '/',
+                        shortOptionPrefix: null,
                         ignoreUnknownArguments: true,
-                        supportFlags: false,
                         caseSensitive: false,
                         allowPrefixMatch: false
                     );
@@ -147,7 +152,6 @@ namespace CommandLine {
                         parsingCulture,
                         longOptionPrefix: "-",
                         shortOptionPrefix: null,
-                        supportFlags: false,
                         caseSensitive: false,
                         allowPrefixMatch: true
                     );

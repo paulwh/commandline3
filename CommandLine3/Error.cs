@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace CommandLine {
@@ -24,10 +26,20 @@ namespace CommandLine {
         }
     }
 
-    public abstract class ValueError : OptionError {
+    public abstract class ValueError : Error {
         public string Value { get; private set; }
 
-        internal ValueError(ErrorType type, OptionName option, string value)
+        internal ValueError(ErrorType type, string value)
+            : base(type) {
+
+            this.Value = value;
+        }
+    }
+
+    public abstract class OptionValueError : OptionError {
+        public string Value { get; private set; }
+
+        internal OptionValueError(ErrorType type, OptionName option, string value)
             : base(type, option) {
 
             if (value == null) {
@@ -50,19 +62,36 @@ namespace CommandLine {
         }
     }
 
+    public class UnexpectedValueError : ValueError {
+        public UnexpectedValueError(string value)
+            : base(ErrorType.UnexpectedValueError, value) {
+        }
+    }
+
     public class MissingRequiredOptionError : OptionError {
         public MissingRequiredOptionError(OptionName option)
             : base(ErrorType.MissingRequiredOptionError, option) {
         }
     }
 
-    public class MutuallyExclusiveSetError : Error {
-        public MutuallyExclusiveSetError(IGrouping<string, OptionName> confictingOptions)
-            : base(ErrorType.MutuallyExclusiveSetError) {
+    public class DuplicateOptionError : OptionValueError {
+        public DuplicateOptionError(OptionName option, string value)
+            : base(ErrorType.DuplicateOptionError, option, value) {
         }
     }
 
-    public class BadValueFormatError : ValueError {
+    public class MutuallyExclusiveSetError : Error {
+        public IList<IGrouping<string, OptionName>> ConflictingOptions { get; private set; }
+
+        public MutuallyExclusiveSetError(IEnumerable<IGrouping<string, OptionName>> confictingOptions)
+            : base(ErrorType.MutuallyExclusiveSetError) {
+
+            this.ConflictingOptions =
+                new ReadOnlyCollection<IGrouping<string, OptionName>>(confictingOptions.ToList());
+        }
+    }
+
+    public class BadValueFormatError : OptionValueError {
         public string Message { get; private set; }
         public BadValueFormatError(OptionName option, string value, string message)
             : base(ErrorType.BadValueFormatError, option, value) {
@@ -75,7 +104,7 @@ namespace CommandLine {
         }
     }
 
-    public class InvalidValueError : ValueError {
+    public class InvalidValueError : OptionValueError {
         public object ParsedValue { get; private set; }
         public string Message { get; private set; }
 
@@ -100,10 +129,12 @@ namespace CommandLine {
     }
 
     public class BadVerbSelectedError : Error {
-        public static readonly BadVerbSelectedError Instance = new BadVerbSelectedError();
+        public string Verb { get; private set; }
 
-        private BadVerbSelectedError()
+        public BadVerbSelectedError(string verb)
             : base(ErrorType.BadVerbSelectedError) {
+
+            this.Verb = verb;
         }
     }
 

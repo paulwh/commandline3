@@ -17,9 +17,17 @@ namespace CommandLine {
         /// </summary>
         UnknownOptionError,
         /// <summary>
+        /// Value of <see cref="CommandLine.UnexpectedValueError"/> type.
+        /// </summary>
+        UnexpectedValueError,
+        /// <summary>
         /// Value of <see cref="CommandLine.MissingRequiredOptionError"/> type.
         /// </summary>
         MissingRequiredOptionError,
+        /// <summary>
+        /// Value of <see cref="CommandLine.DuplicateOptionError"/>
+        /// </summary>
+        DuplicateOptionError,
         /// <summary>
         /// Value of <see cref="CommandLine.MutuallyExclusiveSetError"/> type.
         /// </summary>
