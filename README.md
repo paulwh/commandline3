@@ -82,7 +82,6 @@ Resources for newcomers:
 ---
   - Quickstart - TODO
   - Wiki - TODO
-  - [GNU getopt](http://www.gnu.org/software/libc/manual/html_node/Getopt.html)
 
 Latest Changes:
 ---
