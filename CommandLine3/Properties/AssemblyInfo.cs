@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("CommandLine3")]
+[assembly: AssemblyTitle("CommandLine")]
 [assembly: AssemblyDescription("CommandLine Parsing Library for .Net")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]

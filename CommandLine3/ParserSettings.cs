@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Resources;
 
 namespace CommandLine {
     public enum ArgumentStyle {
@@ -10,9 +11,14 @@ namespace CommandLine {
     }
 
     public class ParserSettings {
+        internal static readonly ResourceManager DefaultResourceManager =
+            new ResourceManager("CommandLine.Text.HelpTextStrings", typeof(ParserSettings).Assembly);
+
         public TextWriter HelpWriter { get; private set; }
 
         public CultureInfo ParsingCulture { get; private set; }
+
+        public ResourceManager HelpTextResourceManager { get; private set; }
 
         public string LongOptionPrefix { get; private set; }
 
@@ -52,6 +58,7 @@ namespace CommandLine {
             : this(
                 Console.Error,
                 CultureInfo.InvariantCulture,
+                DefaultResourceManager,
                 longOptionPrefix,
                 shortOptionPrefix,
                 ignoreUnknownArguments,
@@ -71,6 +78,7 @@ namespace CommandLine {
             : this(
                 helpWriter,
                 CultureInfo.InvariantCulture,
+                DefaultResourceManager,
                 longOptionPrefix,
                 shortOptionPrefix,
                 ignoreUnknownArguments,
@@ -78,6 +86,7 @@ namespace CommandLine {
                 allowPrefixMatch,
                 automaticHelpOutput) {
         }
+
         public ParserSettings(
             CultureInfo parsingCulture,
             string longOptionPrefix = "--",
@@ -89,6 +98,7 @@ namespace CommandLine {
             : this(
                 Console.Error,
                 parsingCulture,
+                DefaultResourceManager,
                 longOptionPrefix,
                 shortOptionPrefix,
                 ignoreUnknownArguments,
@@ -105,9 +115,103 @@ namespace CommandLine {
             bool ignoreUnknownArguments = false,
             bool caseSensitive = true,
             bool allowPrefixMatch = false,
-            bool automaticHelpOutput = true) {
+            bool automaticHelpOutput = true)
+            : this(
+                helpWriter,
+                parsingCulture,
+                DefaultResourceManager,
+                longOptionPrefix,
+                shortOptionPrefix,
+                ignoreUnknownArguments,
+                caseSensitive,
+                allowPrefixMatch,
+                automaticHelpOutput) {
         }
-        
+
+        public ParserSettings(
+            ResourceManager helpTextResourceManager,
+            string longOptionPrefix = "--",
+            char? shortOptionPrefix = '-',
+            bool ignoreUnknownArguments = false,
+            bool caseSensitive = true,
+            bool allowPrefixMatch = false,
+            bool automaticHelpOutput = true)
+            : this(
+                Console.Error,
+                CultureInfo.InvariantCulture,
+                helpTextResourceManager,
+                longOptionPrefix,
+                shortOptionPrefix,
+                ignoreUnknownArguments,
+                caseSensitive,
+                allowPrefixMatch,
+                automaticHelpOutput) {
+        }
+
+        public ParserSettings(
+            TextWriter helpWriter,
+            ResourceManager helpTextResourceManager,
+            string longOptionPrefix = "--",
+            char? shortOptionPrefix = '-',
+            bool ignoreUnknownArguments = false,
+            bool caseSensitive = true,
+            bool allowPrefixMatch = false,
+            bool automaticHelpOutput = true)
+            : this(
+                helpWriter,
+                CultureInfo.InvariantCulture,
+                helpTextResourceManager,
+                longOptionPrefix,
+                shortOptionPrefix,
+                ignoreUnknownArguments,
+                caseSensitive,
+                allowPrefixMatch,
+                automaticHelpOutput) {
+        }
+
+        public ParserSettings(
+            CultureInfo parsingCulture,
+            ResourceManager helpTextResourceManager,
+            string longOptionPrefix = "--",
+            char? shortOptionPrefix = '-',
+            bool ignoreUnknownArguments = false,
+            bool caseSensitive = true,
+            bool allowPrefixMatch = false,
+            bool automaticHelpOutput = true)
+            : this(
+                Console.Error,
+                parsingCulture,
+                helpTextResourceManager,
+                longOptionPrefix,
+                shortOptionPrefix,
+                ignoreUnknownArguments,
+                caseSensitive,
+                allowPrefixMatch,
+                automaticHelpOutput) {
+        }
+
+        public ParserSettings(
+            TextWriter helpWriter,
+            CultureInfo parsingCulture,
+            ResourceManager helpTextResourceManager,
+            string longOptionPrefix = "--",
+            char? shortOptionPrefix = '-',
+            bool ignoreUnknownArguments = false,
+            bool caseSensitive = true,
+            bool allowPrefixMatch = false,
+            bool automaticHelpOutput = true) {
+
+            this.HelpWriter = helpWriter;
+            this.ParsingCulture = parsingCulture;
+            this.HelpTextResourceManager = helpTextResourceManager;
+            this.LongOptionPrefix = longOptionPrefix;
+            this.ShortOptionPrefix = shortOptionPrefix;
+            this.IgnoreUnknownArguments = ignoreUnknownArguments;
+            this.CaseSensitive = caseSensitive;
+            this.AllowPrefixMatch = allowPrefixMatch;
+            this.AutomaticHelpOutput = automaticHelpOutput;
+        }
+
         public static ParserSettings ForArgumentStyle(ArgumentStyle style) {
             return ForArgumentStyle(Console.Error, CultureInfo.InvariantCulture, style);
         }

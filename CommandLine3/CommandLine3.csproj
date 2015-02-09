@@ -41,16 +41,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\OptionLookup.cs" />
     <Compile Include="Core\OptionSpec.cs" />
     <Compile Include="Core\OptionValue.cs" />
     <Compile Include="Core\OptionValueDeserializer.cs" />
     <Compile Include="Core\Token.cs" />
     <Compile Include="Core\VerbSpec.cs" />
+    <Compile Include="DeserializationException.cs" />
     <Compile Include="Error.cs" />
     <Compile Include="ErrorType.cs" />
+    <Compile Include="GenerateHelpTextEventArgs.cs" />
+    <Compile Include="Helpers\AssemblyExtensions.cs" />
     <Compile Include="Helpers\Either.cs" />
+    <Compile Include="Helpers\EnumerableExtensions.cs" />
+    <Compile Include="Helpers\ObjectExtensions.cs" />
     <Compile Include="Helpers\PropertyInfoExtensions.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />
+    <Compile Include="Helpers\StringExtensions.cs" />
     <Compile Include="Helpers\TypeExtensions.cs" />
     <Compile Include="IOptionValueDeserializer.cs" />
     <Compile Include="IOptionValueValidator.cs" />
@@ -60,9 +67,31 @@
     <Compile Include="ParserResult.cs" />
     <Compile Include="ParserSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Text\DefinitionListSection.cs" />
+    <Compile Include="Text\HelpText.cs" />
+    <Compile Include="Text\HelpTextSection.cs" />
+    <Compile Include="Text\HelpTextStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HelpTextStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Text\OptionsSection.cs" />
+    <Compile Include="Text\ParseErrorsSection.cs" />
+    <Compile Include="Text\ProgramCopyrightSection.cs" />
+    <Compile Include="Text\ProgramDescriptionSection.cs" />
+    <Compile Include="Text\ProgramNameSection.cs" />
+    <Compile Include="Text\ProgramUsageSection.cs" />
+    <Compile Include="Text\SelectedCommandSection.cs" />
+    <Compile Include="Text\SimpleTextSection.cs" />
+    <Compile Include="Text\VerbsSection.cs" />
     <Compile Include="VerbAttribute.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Text\HelpTextStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>HelpTextStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

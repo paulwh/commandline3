@@ -13,5 +13,24 @@ namespace CommandLine {
             this.LongName = longName;
             this.ShortName = shortName;
         }
+
+        internal string ToString(ParserSettings settings) {
+            var builder = new StringBuilder();
+            var hasLongForm = !String.IsNullOrEmpty(this.LongName) && !String.IsNullOrEmpty(settings.LongOptionPrefix);
+            var hasShortForm = this.ShortName.HasValue && settings.ShortOptionPrefix.HasValue;
+            if (hasShortForm) {
+                builder.Append(settings.ShortOptionPrefix.Value);
+                builder.Append(this.ShortName.Value);
+
+                if (hasLongForm) {
+                    builder.Append('|');
+                }
+            }
+            if (hasLongForm) {
+                builder.Append(settings.LongOptionPrefix);
+                builder.Append(this.LongName);
+            }
+            return builder.ToString();
+        }
     }
 }

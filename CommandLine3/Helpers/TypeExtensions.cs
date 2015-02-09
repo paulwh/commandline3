@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace CommandLine.Helpers {
     public static class TypeExtensions {
-        public static TAttribute GetCustomAttribute<TAttribute>(this Type type, bool inherit)
+        public static TAttribute GetCustomAttribute<TAttribute>(this Type type, bool inherit = false)
             where TAttribute : Attribute {
 
             return

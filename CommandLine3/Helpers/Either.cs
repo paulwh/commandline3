@@ -9,7 +9,7 @@ namespace CommandLine.Helpers {
         Right
     }
 
-    public static class EitherExtensions {
+    internal static class EitherExtensions {
         public static bool IsLeft(this Either either) {
             return either.Type == EitherType.Left;
         }

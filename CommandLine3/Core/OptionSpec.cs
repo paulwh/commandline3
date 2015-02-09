@@ -59,5 +59,11 @@ namespace CommandLine.Core {
                 );
             }
         }
+
+        public OptionSpec(String longName, char shortName, string helpText) {
+            this.LongName = longName;
+            this.ShortName = shortName;
+            this.HelpText = helpText;
+        }
     }
 }

@@ -50,7 +50,7 @@ namespace CommandLine {
             );
         }
 
-        public ParserResult<T> WithVerbInfo(IList<VerbSpec> verbTypes, string verb) {
+        internal ParserResult<T> WithVerbInfo(IList<VerbSpec> verbTypes, string verb) {
             return new ParserResult<T>(
                 this.Value,
                 this.Errors,

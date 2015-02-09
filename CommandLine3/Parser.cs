@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using CommandLine.Core;
 using CommandLine.Helpers;
+using CommandLine.Text;
 
 namespace CommandLine {
     public class Parser {
@@ -37,6 +38,8 @@ namespace CommandLine {
 
             this.settings = settings;
         }
+
+        public event EventHandler<GenerateHelpTextEventArgs> GenerateHelpText = delegate { };
 
         public ParserResult<T> ParseArguments<T>(string[] args) where T : new() {
             if (args == null) {
@@ -185,13 +188,27 @@ namespace CommandLine {
                 }
             }
 
-            // TODO: Check for help requests or critical errors and display help text
-
-            return new ParserResult<T>(
+            var parserResult = new ParserResult<T>(
                 instance,
                 errors,
                 optionLookup.All
             );
+
+            var criticalErrors =
+                this.settings.IgnoreUnknownArguments ?
+                    errors.Where(e => e.Type != ErrorType.UnknownOptionError && e.Type != ErrorType.UnexpectedValueError) :
+                    errors;
+            if (this.settings.AutomaticHelpOutput && criticalErrors.Any()) {
+
+                var generateHelpTextArg =
+                    new GenerateHelpTextEventArgs { HelpText = HelpText.AutoBuild(this.settings, parserResult) };
+                this.GenerateHelpText(this, generateHelpTextArg);
+                if (generateHelpTextArg.HelpText != null) {
+                    generateHelpTextArg.HelpText.Render(this.settings.HelpWriter);
+                }
+            }
+
+            return parserResult;
         }
 
 
@@ -200,7 +217,7 @@ namespace CommandLine {
         /// into either OptionValue pairs that link each option with zero or
         /// more option, or errors representing unhandled or missing tokens.
         /// </summary>
-        public IEnumerable<Either<Error, OptionValue>> HandleTokens(OptionLookup optionSpecs, IEnumerable<Token> tokens) {
+        internal IEnumerable<Either<Error, OptionValue>> HandleTokens(OptionLookup optionSpecs, IEnumerable<Token> tokens) {
             OptionSpec current = null;
             var values = new Queue<string>();
             // the preceding option had the format --foo=
@@ -361,6 +378,7 @@ namespace CommandLine {
             return new ParserResult<T>(
                 instance,
                 result.Errors,
+                result.Options,
                 result.VerbTypes,
                 result.Verb
             );
@@ -495,20 +513,34 @@ namespace CommandLine {
                         .Invoke(this, new object[] { selectedVerb.CreateInstance(), args.Skip(1) });
 
                 return result.WithVerbInfo(verbs, args[0]);
-            } else if (HelpVerb.Equals(args[0], this.settings.StringComparison)) {
-                return new ParserResult<object>(
-                    null,
-                    new[] { HelpVerbRequestedError.Instance },
-                    verbs,
-                    args[0]
-                );
             } else {
-                return new ParserResult<object>(
-                    null,
-                    new[] { new BadVerbSelectedError(args[0]) },
-                    verbs,
-                    args[0]
-                );
+                ParserResult<object> result;
+                if (HelpVerb.Equals(args[0], this.settings.StringComparison)) {
+                    result = new ParserResult<object>(
+                        null,
+                        new[] { HelpVerbRequestedError.Instance },
+                        verbs,
+                        args[0]
+                    );
+                } else {
+                    result = new ParserResult<object>(
+                        null,
+                        new[] { new BadVerbSelectedError(args[0]) },
+                        verbs,
+                        args[0]
+                    );
+                }
+
+                if (this.settings.AutomaticHelpOutput) {
+                    var generateHelpTextArg =
+                        new GenerateHelpTextEventArgs { HelpText = HelpText.AutoBuild(this.settings, result) };
+                    this.GenerateHelpText(this, generateHelpTextArg);
+                    if (generateHelpTextArg.HelpText != null) {
+                        generateHelpTextArg.HelpText.Render(this.settings.HelpWriter);
+                    }
+                }
+
+                return result;
             }
         }
 
