@@ -27,6 +27,9 @@ namespace CommandLine.Text {
                 }
             }
             if (hasLongForm) {
+                if (!hasShortForm) {
+                    termBuilder.Append("    ");
+                }
                 termBuilder.Append(settings.LongOptionPrefix);
                 termBuilder.Append(option.LongName);
             }

@@ -35,6 +35,7 @@ namespace CommandLine.Text {
                 yield return SimpleTextSection.Blank;
             }
             if (this.Errors != null) {
+                yield return new SimpleTextSection("ERROR(S):");
                 yield return this.Errors;
                 yield return SimpleTextSection.Blank;
             }

@@ -18,9 +18,9 @@ namespace CommandLine {
         public OptionAttribute() {
         }
 
-        public OptionAttribute(string longName, char shortName) {
-            this.LongName = longName;
+        public OptionAttribute(char shortName, string longName) {
             this.ShortName = shortName;
+            this.LongName = longName;
         }
 
         public OptionAttribute(string longName) {
@@ -31,9 +31,9 @@ namespace CommandLine {
             this.ShortName = shortName;
         }
 
-        public OptionAttribute(string longName, char shortName, int position) {
-            this.LongName = longName;
+        public OptionAttribute(char shortName, string longName, int position) {
             this.ShortName = shortName;
+            this.LongName = longName;
             this.Position = position;
         }
 

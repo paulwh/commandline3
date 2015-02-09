@@ -32,5 +32,18 @@ namespace CommandLine {
             }
             return builder.ToString();
         }
+
+        internal string ToShortString(ParserSettings settings) {
+            var builder = new StringBuilder();
+            var hasShortForm = this.ShortName.HasValue && settings.ShortOptionPrefix.HasValue;
+            if (hasShortForm) {
+                builder.Append(settings.ShortOptionPrefix.Value);
+                builder.Append(this.ShortName.Value);
+            } else {
+                builder.Append(settings.LongOptionPrefix);
+                builder.Append(this.LongName);
+            }
+            return builder.ToString();
+        }
     }
 }

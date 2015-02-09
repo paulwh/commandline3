@@ -33,7 +33,10 @@ namespace CommandLine.Text {
         internal static ParseErrorsSection AutoBuild(ParserSettings settings, IEnumerable<Error> errors) {
             var actualErrors = errors.Where(e => !HelpRequestErrorTypes.Contains(e.Type));
             if (actualErrors.Any()) {
-                return new ParseErrorsSection(settings, actualErrors);
+                return new ParseErrorsSection(settings, actualErrors) {
+                    Indent = "    ",
+                    SubIndent = "        "
+                };
             } else {
                 return null;
             }

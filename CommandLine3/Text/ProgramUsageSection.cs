@@ -79,15 +79,15 @@ namespace CommandLine.Text {
                 if (option.Position.HasValue && !option.IsSwitch) {
                     builder.Append('[');
                 }
-                builder.Append(option.OptionName.ToString(settings));
+                builder.Append(option.OptionName.ToShortString(settings));
                 if (option.Position.HasValue && !option.IsSwitch) {
                     builder.Append(']');
                 }
                 if (!option.IsSwitch) {
                     if (option.Deserializer.AcceptsMultipleValues) {
-                        builder.Append(" value1 value2 ...");
+                        builder.Append(" <value1> <value2> ...");
                     } else {
-                        builder.Append(" value");
+                        builder.Append(" <value>");
                     }
                 }
                 if (!option.Required) {
