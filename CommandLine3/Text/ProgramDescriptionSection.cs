@@ -16,7 +16,7 @@ namespace CommandLine.Text {
         }
 
         internal static ProgramDescriptionSection AutoBuild() {
-            return Assembly.GetExecutingAssembly()
+            return Assembly.GetEntryAssembly()
                 .Bind(a => a.GetCustomAttribute<AssemblyDescriptionAttribute>())
                 .Bind(attr => attr.Description.EmptyAsNull())
                 .Bind(desc => new ProgramDescriptionSection { Description = desc });

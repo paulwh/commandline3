@@ -16,7 +16,7 @@ namespace CommandLine.Text {
         }
 
         internal static ProgramCopyrightSection AutoBuild() {
-            return Assembly.GetExecutingAssembly()
+            return Assembly.GetEntryAssembly()
                 .Bind(a => a.GetCustomAttribute<AssemblyCopyrightAttribute>())
                 .Bind(attr => attr.Copyright.EmptyAsNull())
                 .Bind(cr => new ProgramCopyrightSection { Copyright = cr });

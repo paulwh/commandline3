@@ -1,10 +1,10 @@
 using System;
 
 namespace CommandLine {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class VerbAttribute : Attribute {
         public string Name { get; private set; }
-        public string HelpText { get; private set; }
+        public string HelpText { get; set; }
 
         public VerbAttribute(string name) {
             if (name == null) {

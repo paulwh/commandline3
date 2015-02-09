@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using CommandLine.Helpers;
 
 namespace CommandLine.Core {
@@ -8,13 +9,13 @@ namespace CommandLine.Core {
         public IList<OptionSpec> All { get; private set; }
         public IDictionary<string, OptionSpec> ByLongName { get; private set; }
         public IDictionary<char, OptionSpec> ByShortName { get; private set; }
-        public IList<OptionSpec> ByPosition { get; private set; }
+        public IDictionary<Maybe<string>, IList<OptionSpec>> ByPosition { get; private set; }
 
         public OptionLookup(
             IList<OptionSpec> all,
             IDictionary<string, OptionSpec> byLongName,
             IDictionary<char, OptionSpec> byShortName,
-            IList<OptionSpec> byPosition) {
+            IDictionary<Maybe<string>, IList<OptionSpec>> byPosition) {
 
             this.All = all;
             this.ByLongName = byLongName;
@@ -22,7 +23,7 @@ namespace CommandLine.Core {
             this.ByPosition = byPosition;
         }
 
-        public OptionSpec ForToken(Token token) {
+        public OptionSpec GetOptionForToken(Token token) {
             switch (token.Type) {
                 case TokenType.Option:
                 case TokenType.OptionExpectingValue:
@@ -39,6 +40,12 @@ namespace CommandLine.Core {
             }
         }
 
+        public static OptionLookup ForType(Type type) {
+            return (OptionLookup)ForTypeMethod.MakeGenericMethod(type).Invoke(null, new object[0]);
+        }
+
+        private static readonly MethodInfo ForTypeMethod =
+            ReflectionHelper.GetGenericMethodDefinition(() => ForType<object>());
         public static OptionLookup ForType<T>() {
             var optionSpecs =
                 typeof(T)
@@ -54,31 +61,53 @@ namespace CommandLine.Core {
                     .Where(os => os.ShortName.HasValue)
                     .ToDictionary(os => os.ShortName.Value);
 
-            var byPosition =
+            var byParameterSet =
                 optionSpecs
-                    .Where(os => os.Position.HasValue)
-                    .GroupBy(os => os.Position.Value)
-                    .Select(
-                        grp => {
-                            try {
-                                return grp.Single();
-                            } catch {
-                                throw new InvalidOperationException(
-                                    "Multiple options have the same position: " + String.Join(",", grp.Select(os => os.LongName))
-                                );
-                            }
-                        })
-                    .OrderBy(os => os.Position.Value)
-                    .ToList();
+                    .GroupBy(os => (Maybe<string>)os.ParameterSetName)
+                    .ToDictionary(
+                        grp => grp.Key,
+                        grp => grp.ToList());
 
-            var optionLookup =
-                new OptionLookup(
-                    optionSpecs,
-                    longNameIndex,
-                    shortNameIndex,
-                    byPosition
-                );
-            return optionLookup;
+            if (!byParameterSet.ContainsKey(null)) {
+                byParameterSet[null] = new List<OptionSpec>();
+            }
+
+            // the byPosition lists are built per-paramter-set since positions
+            // may be reused between different parameter sets
+            var byPosition =
+                byParameterSet
+                    .Keys
+                    .Select(ps => new {
+                        ParameterSet = ps,
+                        Options =
+                            ps.HasValue ?
+                                byParameterSet[null].Concat(byParameterSet[ps]) :
+                                byParameterSet[null] })
+                    .ToDictionary(
+                        ps => ps.ParameterSet,
+                        ps => ps.Options
+                            .Where(os => os.Position.HasValue)
+                            .GroupBy(os => os.Position.Value)
+                            .Select(
+                                grp => {
+                                    try {
+                                        return grp.Single();
+                                    } catch {
+                                        throw new InvalidOperationException(
+                                            "Multiple options have the same position: " + String.Join(",", grp.Select(os => os.LongName))
+                                        );
+                                    }
+                                })
+                            .OrderBy(os => os.Position.Value)
+                            .ToList() as IList<OptionSpec>
+                    );
+
+            return new OptionLookup(
+                optionSpecs,
+                longNameIndex,
+                shortNameIndex,
+                byPosition
+            );
         }
     }
 }

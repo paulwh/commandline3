@@ -54,6 +54,7 @@
     <Compile Include="Helpers\AssemblyExtensions.cs" />
     <Compile Include="Helpers\Either.cs" />
     <Compile Include="Helpers\EnumerableExtensions.cs" />
+    <Compile Include="Helpers\Maybe.cs" />
     <Compile Include="Helpers\ObjectExtensions.cs" />
     <Compile Include="Helpers\PropertyInfoExtensions.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />

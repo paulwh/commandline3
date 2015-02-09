@@ -26,7 +26,7 @@ namespace CommandLine {
 
             this.hasShortFormPrefix = settings.ShortOptionPrefix.HasValue;
             this.shortFormPrefix = settings.ShortOptionPrefix.Value;
-            this.longFormPrefixLength = this.settings.LongOptionPrefix.Length;
+            this.longFormPrefixLength = settings.LongOptionPrefix.Length;
 
             if (this.hasShortFormPrefix &&
                 settings.LongOptionPrefix == this.shortFormPrefix.ToString()) {
@@ -59,11 +59,11 @@ namespace CommandLine {
             return this.ParseArgumentsImpl(instance, args);
         }
 
-        private ParserResult<T> ParseArgumentsImpl<T>(T instance, IEnumerable<string> args) {
+        private ParserResult<T> ParseArgumentsImpl<T>(T instance, IEnumerable<string> args, VerbSpec verb = null) {
             var optionLookup = OptionLookup.ForType<T>();
             var handlerResults = HandleTokens(
                 optionLookup,
-                this.Tokenize(args)
+                this.Tokenize(args).ToList()
             ).ToList();
 
             var errors = new List<Error>();
@@ -191,7 +191,10 @@ namespace CommandLine {
             var parserResult = new ParserResult<T>(
                 instance,
                 errors,
-                optionLookup.All
+                optionLookup.All,
+                null,
+                verb,
+                presentParameterSets.FirstOrDefault()
             );
 
             var criticalErrors =
@@ -217,8 +220,33 @@ namespace CommandLine {
         /// into either OptionValue pairs that link each option with zero or
         /// more option, or errors representing unhandled or missing tokens.
         /// </summary>
-        internal IEnumerable<Either<Error, OptionValue>> HandleTokens(OptionLookup optionSpecs, IEnumerable<Token> tokens) {
+        internal IEnumerable<Either<Error, OptionValue>> HandleTokens(OptionLookup optionSpecs, IList<Token> tokens) {
+            string parameterSet = null;
+            // Pass #1 resolve the parameter set
+            foreach (var token in tokens) {
+                OptionSpec option = null;
+                switch (token.Type) {
+                    case TokenType.Option:
+                    case TokenType.OptionExpectingValue:
+                    case TokenType.ShortOption:
+                        option = optionSpecs.GetOptionForToken(token);
+                        break;
+                }
+                if (option != null && option.ParameterSetName != null) {
+                    parameterSet = option.ParameterSetName;
+                    // don't bother checking for conflicts, we'll deal with
+                    // that later.
+                    break;
+                }
+            }
+
+            IList<OptionSpec> byPosition;
+            if (!optionSpecs.ByPosition.TryGetValue(parameterSet, out byPosition)) {
+                byPosition = new List<OptionSpec>();
+            }
+
             OptionSpec current = null;
+            OptionName currentName = null;
             var values = new Queue<string>();
             // the preceding option had the format --foo=
             bool valueExpected = false;
@@ -243,23 +271,41 @@ namespace CommandLine {
                             }
                             yield return new OptionValue(
                                 current,
-                                name,
+                                currentName,
                                 values
                             );
-                            current = null;
+                            if (current.Position.HasValue) {
+                                position = byPosition.IndexOf(current);
+                            }
                             values = new Queue<string>();
                         }
 
                         // detect option for the current token
-                        current = optionSpecs.ForToken(token);
+                        current = optionSpecs.GetOptionForToken(token);
+                        currentName = name;
                         if (current == null) {
                             if (IsHelpToken(token)) {
                                 yield return HelpRequestedError.Instance;
                             } else {
                                 yield return new UnknownOptionError(name);
                             }
+                            currentName = null;
                         } else {
                             valueExpected = (token.Type == TokenType.OptionExpectingValue);
+                            if (!valueExpected && current.IsSwitch) {
+                                // don't let switches suck take input unless
+                                // they take the form --switch=no
+                                yield return new OptionValue(
+                                    current,
+                                    currentName,
+                                    Enumerable.Empty<string>()
+                                );
+                                if (current.Position.HasValue) {
+                                    position = byPosition.IndexOf(current);
+                                }
+                                current = null;
+                                currentName = null;
+                            }
                         }
                         break;
                     case TokenType.Value:
@@ -273,22 +319,26 @@ namespace CommandLine {
                                 // associated value.
                                 yield return new OptionValue(
                                     current,
-                                    current.OptionName,
+                                    currentName,
                                     values
                                 );
+                                if (current.Position.HasValue) {
+                                    position = byPosition.IndexOf(current);
+                                }
                                 values = new Queue<string>();
                                 valueExpected = false;
                                 current = null;
                             } // otherwise, continue accumulating values
-                        } else if (++position < optionSpecs.ByPosition.Count) {
+                        } else if (++position < byPosition.Count) {
                             // there's a positional parameter we can bind this
                             // value to
-                            current = optionSpecs.ByPosition[position];
+                            current = byPosition[position];
+                            currentName = current.OptionName;
                             values.Enqueue(token.Value);
                             // if this isn't the last positional parameter, or
                             // it isn't a list option, yield it immediately
                             // (otherwise we accumulate more values)
-                            if (position + 1 < optionSpecs.ByPosition.Count ||
+                            if (position + 1 < byPosition.Count ||
                                 !IsListOption(current)) {
                                 yield return new OptionValue(
                                     current,
@@ -297,6 +347,7 @@ namespace CommandLine {
                                 );
                                 values = new Queue<string>();
                                 current = null;
+                                currentName = null;
                             }
                         } else {
                             // this value doesn't to correspond to any option
@@ -380,7 +431,8 @@ namespace CommandLine {
                 result.Errors,
                 result.Options,
                 result.VerbTypes,
-                result.Verb
+                result.VerbSpec,
+                result.ParameterSet
             );
         }
 
@@ -510,24 +562,44 @@ namespace CommandLine {
                 var result =
                     (ParserResult<object>)ParseVerbArgumentsMethod
                         .MakeGenericMethod(selectedVerb.VerbType)
-                        .Invoke(this, new object[] { selectedVerb.CreateInstance(), args.Skip(1) });
+                        .Invoke(this, new object[] { selectedVerb.CreateInstance(), args.Skip(1), selectedVerb });
 
-                return result.WithVerbInfo(verbs, args[0]);
+                return result.WithVerbInfo(verbs, selectedVerb);
             } else {
                 ParserResult<object> result;
                 if (HelpVerb.Equals(args[0], this.settings.StringComparison)) {
-                    result = new ParserResult<object>(
-                        null,
-                        new[] { HelpVerbRequestedError.Instance },
-                        verbs,
-                        args[0]
-                    );
+                    if (args.Length >= 2) {
+                        if (verbLookup.TryGetValue(args[1], out selectedVerb)) {
+                            result = new ParserResult<object>(
+                                null,
+                                new[] { HelpRequestedError.Instance },
+                                this.GetOptionsForVerb(selectedVerb),
+                                verbs,
+                                selectedVerb,
+                                null
+                            );
+                        } else {
+                            result = new ParserResult<object>(
+                                null,
+                                new[] { new BadVerbSelectedError(args[1]) },
+                                verbs,
+                                null
+                            );
+                        }
+                    } else {
+                        result = new ParserResult<object>(
+                            null,
+                            new[] { HelpVerbRequestedError.Instance },
+                            verbs,
+                            null
+                        );
+                    }
                 } else {
                     result = new ParserResult<object>(
                         null,
                         new[] { new BadVerbSelectedError(args[0]) },
                         verbs,
-                        args[0]
+                        null
                     );
                 }
 
@@ -544,11 +616,15 @@ namespace CommandLine {
             }
         }
 
-        private MethodInfo ParseVerbArgumentsMethod =
-            ReflectionHelper.GetGenericMethodDefinition<Parser>(p => p.ParseVerbArguments<object>(null, null));
+        private IList<OptionSpec> GetOptionsForVerb(VerbSpec selectedVerb) {
+            return OptionLookup.ForType(selectedVerb.VerbType).All;
+        }
 
-        private ParserResult<object> ParseVerbArguments<T>(T instance, IEnumerable<string> args) {
-            return ParseArgumentsImpl<T>(instance, args).ToUntyped();
+        private MethodInfo ParseVerbArgumentsMethod =
+            ReflectionHelper.GetGenericMethodDefinition<Parser>(p => p.ParseVerbArguments<object>(null, null, null));
+
+        private ParserResult<object> ParseVerbArguments<T>(T instance, IEnumerable<string> args, VerbSpec verb) {
+            return ParseArgumentsImpl<T>(instance, args, verb).ToUntyped();
         }
 
         private IEnumerable<Token> Tokenize(IEnumerable<string> args) {
@@ -559,7 +635,7 @@ namespace CommandLine {
                         yield return new Token(
                             TokenType.OptionExpectingValue,
                             arg,
-                            arg.Substring(this.longFormPrefixLength, eqIx)
+                            arg.Substring(this.longFormPrefixLength, eqIx - this.longFormPrefixLength)
                         );
 
                         yield return new Token(

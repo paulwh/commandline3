@@ -389,6 +389,18 @@ namespace CommandLine.Core {
     }
 
     internal static class GenericCollectionDeserializer {
+        private static readonly IDictionary<Type, MethodInfo> StandardCollectionFactories;
+
+        static GenericCollectionDeserializer() {
+            StandardCollectionFactories =
+                new Dictionary<Type, MethodInfo> {
+                    { typeof(ICollection<>), CreateListMethod },
+                    { typeof(IList<>), CreateListMethod },
+                    { typeof(ISet<>), CreateSetMethod },
+                    { typeof(IDictionary<,>), CreateDictionaryMethod },
+                };
+        }
+
         public static IOptionValueDeserializer ForType(Type type) {
             var elementType = type.GetInterface(typeof(ICollection<>)).GetGenericArguments().Single();
             return (IOptionValueDeserializer)ForTypeMethod.MakeGenericMethod(elementType, type).Invoke(null, new object[0]);
@@ -399,14 +411,6 @@ namespace CommandLine.Core {
         public static GenericCollectionDeserializer<TElem, TColl> ForType<TElem, TColl>() where TColl : ICollection<TElem> {
             return GenericCollectionDeserializer<TElem, TColl>.Instance;
         }
-
-        private static readonly IDictionary<Type, MethodInfo> StandardCollectionFactories =
-            new Dictionary<Type, MethodInfo> {
-                { typeof(ICollection<>), CreateListMethod },
-                { typeof(IList<>), CreateListMethod },
-                { typeof(ISet<>), CreateSetMethod },
-                { typeof(IDictionary<,>), CreateDictionaryMethod },
-            };
 
         private static MethodInfo CreateListMethod =
             ReflectionHelper.GetGenericMethodDefinition(() => CreateList<object>());
@@ -428,7 +432,7 @@ namespace CommandLine.Core {
 
         internal static object CreateInstanceOf(Type type) {
             MethodInfo factoryMethod;
-            if (StandardCollectionFactories.TryGetValue(type, out factoryMethod)) {
+            if (StandardCollectionFactories.TryGetValue(type.GetGenericTypeDefinition(), out factoryMethod)) {
                 return factoryMethod.MakeGenericMethod(type.GetGenericArguments()).Invoke(null, new object[0]);
             } else {
                 throw new NotSupportedException(

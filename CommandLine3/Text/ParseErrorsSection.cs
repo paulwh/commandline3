@@ -17,6 +17,7 @@ namespace CommandLine.Text {
             } else if (errors == null) {
                 throw new ArgumentNullException("errors");
             }
+            this.Settings = settings;
             this.Errors = new List<Error>(errors);
         }
 

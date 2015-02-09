@@ -23,7 +23,7 @@ namespace CommandLine {
                 builder.Append(this.ShortName.Value);
 
                 if (hasLongForm) {
-                    builder.Append('|');
+                    builder.Append(settings.LongOptionPrefix.StartsWith("/") ? '|' : '/');
                 }
             }
             if (hasLongForm) {

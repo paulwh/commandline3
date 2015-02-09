@@ -5,11 +5,11 @@ namespace CommandLine {
     public class OptionAttribute : Attribute {
         public string LongName { get; private set; }
         public char? ShortName { get; private set; }
+        public int? Position { get; private set; }
         public bool Required { get; set; }
         public string ParameterSetName { get; set; }
         public object DefaultValue { get; set; }
         public string HelpText { get; set; }
-        public int? Position { get; set; }
         public Type Validator { get; set; }
         public object[] ValidatorArguments { get; set; }
         public Type Deserializer { get; set; }
@@ -18,7 +18,7 @@ namespace CommandLine {
         public OptionAttribute() {
         }
 
-        public OptionAttribute(string longName, char? shortName) {
+        public OptionAttribute(string longName, char shortName) {
             this.LongName = longName;
             this.ShortName = shortName;
         }
@@ -27,8 +27,24 @@ namespace CommandLine {
             this.LongName = longName;
         }
 
-        public OptionAttribute(char? shortName) {
+        public OptionAttribute(char shortName) {
             this.ShortName = shortName;
+        }
+
+        public OptionAttribute(string longName, char shortName, int position) {
+            this.LongName = longName;
+            this.ShortName = shortName;
+            this.Position = position;
+        }
+
+        public OptionAttribute(string longName, int position) {
+            this.LongName = longName;
+            this.Position = position;
+        }
+
+        public OptionAttribute(char? shortName, int position) {
+            this.ShortName = shortName;
+            this.Position = position;
         }
     }
 }

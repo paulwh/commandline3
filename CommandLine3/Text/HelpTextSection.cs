@@ -19,7 +19,7 @@ namespace CommandLine.Text {
         public string SubIndent { get; set; }
 
         static HelpTextSection() {
-            DefaultAutoWrap = 80;
+            DefaultAutoWrap = Math.Min(Console.WindowWidth, 120);
         }
 
         public void Render(TextWriter writer) {
@@ -41,7 +41,7 @@ namespace CommandLine.Text {
                         } else {
                             indentWidth = (this.SubIndent ?? String.Empty).Length;
                             if (indentWidth > 0) {
-                                writer.Write(indentWidth);
+                                writer.Write(this.SubIndent);
                             }
                         }
                         var nextPos = pos + AutoWrap - indentWidth;
@@ -57,7 +57,7 @@ namespace CommandLine.Text {
                                 nextPos = pos + AutoWrap - indentWidth;
                             }
                         }
-                        writer.WriteLine(line.Substring(pos, nextPos - 1));
+                        writer.WriteLine(line.Substring(pos, nextPos - 1 - pos));
                         pos = nextPos;
                         // skip over any whitespace.
                         while (pos < line.Length && Char.IsWhiteSpace(line[pos])) {

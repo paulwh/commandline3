@@ -24,5 +24,17 @@ namespace CommandLine.Text {
                 );
             }
         }
+
+        internal static SelectedCommandSection AutoBuild<T>(ParserSettings settings, ParserResult<T> result) {
+            if (!String.IsNullOrEmpty(result.Verb)) {
+                return new SelectedCommandSection {
+                    Verb = result.Verb,
+                    HelpText = result.VerbSpec.HelpText,
+                    FormatString = settings.HelpTextResourceManager.GetString("SelectedVerbFormat")
+                };
+            } else {
+                return null;
+            }
+        }
     }
 }

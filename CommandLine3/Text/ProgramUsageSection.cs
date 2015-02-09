@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -48,6 +49,15 @@ namespace CommandLine.Text {
             }
 
             return new ProgramUsageSection(usages.ToArray()) {
+                ExecutableName = Process.GetCurrentProcess().ProcessName,
+                FormatString = settings.HelpTextResourceManager.GetString("UsageStringFormat"),
+                SubIndent = "    "
+            };
+        }
+
+        internal static ProgramUsageSection AutoBuild(ParserSettings settings, IList<VerbSpec> verbs) {
+            return new ProgramUsageSection("(" + String.Join("|", verbs.Select(vs => vs.VerbName)) + ")") {
+                ExecutableName = Process.GetCurrentProcess().ProcessName,
                 FormatString = settings.HelpTextResourceManager.GetString("UsageStringFormat"),
                 SubIndent = "    "
             };
@@ -69,15 +79,15 @@ namespace CommandLine.Text {
                 if (option.Position.HasValue && !option.IsSwitch) {
                     builder.Append('[');
                 }
-                option.OptionName.ToString(settings);
+                builder.Append(option.OptionName.ToString(settings));
                 if (option.Position.HasValue && !option.IsSwitch) {
                     builder.Append(']');
                 }
                 if (!option.IsSwitch) {
                     if (option.Deserializer.AcceptsMultipleValues) {
-                        builder.Append("value1 value2 ...");
+                        builder.Append(" value1 value2 ...");
                     } else {
-                        builder.Append("value");
+                        builder.Append(" value");
                     }
                 }
                 if (!option.Required) {

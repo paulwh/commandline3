@@ -26,7 +26,7 @@ namespace CommandLine.Text {
         }
 
         internal static ProgramNameSection AutoBuild(ParserSettings settings) {
-            var assembly = Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetEntryAssembly();
 
             if (assembly != null) {
                 var programName =

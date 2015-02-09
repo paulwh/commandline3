@@ -30,13 +30,19 @@ namespace CommandLine.Text {
                 yield return this.LongDescription;
                 yield return SimpleTextSection.Blank;
             }
-            yield return this.SelectedCommand;
+            if (this.SelectedCommand != null) {
+                yield return this.SelectedCommand;
+                yield return SimpleTextSection.Blank;
+            }
+            if (this.Errors != null) {
+                yield return this.Errors;
+                yield return SimpleTextSection.Blank;
+            }
             yield return this.PreOptionsSection;
             yield return this.Options;
             yield return this.Verbs;
             if ((this.Options != null || this.Verbs != null) &&
                 (this.PostOptionsSection != null | this.Copyright != null)) {
-
                 yield return SimpleTextSection.Blank;
             }
             yield return this.PostOptionsSection;
@@ -57,17 +63,15 @@ namespace CommandLine.Text {
             }
         }
 
-        private static readonly ErrorType[] VerbHelpErrorTypes =
-            new [] { ErrorType.HelpVerbRequestedError, ErrorType.BadVerbSelectedError, ErrorType.NoVerbSelectedError };
-
         public static HelpText AutoBuild<T>(ParserSettings settings, ParserResult<T> result) {
-            var displayVerbHelp = result.Errors.Any(e => VerbHelpErrorTypes.Contains(e.Type));
+            var displayVerbHelp = result.IsVerbErrorResult();
+            var helpRequested = result.Errors.Any(e => e.Type == ErrorType.HelpRequestedError);
             return new HelpText {
                 ProgramName = ProgramNameSection.AutoBuild(settings),
-                ProgramUsage = ProgramUsageSection.AutoBuild(settings, result.Options),
+                ProgramUsage = displayVerbHelp ? ProgramUsageSection.AutoBuild(settings, result.VerbTypes) : ProgramUsageSection.AutoBuild(settings, result.Options),
                 ProgramDescription = ProgramDescriptionSection.AutoBuild(),
-                SelectedCommand = result.Verb != null && !displayVerbHelp ? new SelectedCommandSection { Verb = result.Verb } : null,
-                Errors = ParseErrorsSection.AutoBuild(settings, result.Errors),
+                SelectedCommand = !displayVerbHelp ? SelectedCommandSection.AutoBuild(settings, result) : null,
+                Errors = !helpRequested ? ParseErrorsSection.AutoBuild(settings, result.Errors) : null,
                 Options = !displayVerbHelp ? OptionsSection.AutoBuild(settings, result.Options) : null,
                 Verbs = displayVerbHelp ? VerbsSection.AutoBuild(settings, result.VerbTypes) : null,
                 Copyright = ProgramCopyrightSection.AutoBuild()
