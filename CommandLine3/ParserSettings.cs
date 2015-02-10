@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Resources;
+using CommandLine.Helpers;
 
 namespace CommandLine {
     public enum ArgumentStyle {
@@ -210,6 +211,29 @@ namespace CommandLine {
             this.CaseSensitive = caseSensitive;
             this.AllowPrefixMatch = allowPrefixMatch;
             this.AutomaticHelpOutput = automaticHelpOutput;
+        }
+
+        public ParserSettings With(
+            TextWriter helpWriter = null,
+            CultureInfo parsingCulture = null,
+            ResourceManager helpTextResourceManager = null,
+            Maybe<string> longOptionPrefix = default(Maybe<string>),
+            Maybe<char?> shortOptionPrefix = default(Maybe<char?>),
+            Maybe<bool> ignoreUnknownArguments = default(Maybe<bool>),
+            Maybe<bool> caseSensitive = default(Maybe<bool>),
+            Maybe<bool> allowPrefixMatch = default(Maybe<bool>),
+            Maybe<bool> automaticHelpOutput = default(Maybe<bool>)) {
+
+            return new ParserSettings(
+                helpWriter ?? this.HelpWriter,
+                parsingCulture ?? this.ParsingCulture,
+                helpTextResourceManager ?? this.HelpTextResourceManager,
+                longOptionPrefix.GetValueOrDefault(this.LongOptionPrefix),
+                shortOptionPrefix.GetValueOrDefault(this.ShortOptionPrefix),
+                ignoreUnknownArguments.GetValueOrDefault(this.IgnoreUnknownArguments),
+                caseSensitive.GetValueOrDefault(this.CaseSensitive),
+                automaticHelpOutput.GetValueOrDefault(this.AutomaticHelpOutput)
+            );
         }
 
         public static ParserSettings ForArgumentStyle(ArgumentStyle style) {

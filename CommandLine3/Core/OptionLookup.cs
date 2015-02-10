@@ -63,13 +63,13 @@ namespace CommandLine.Core {
 
             var byParameterSet =
                 optionSpecs
-                    .GroupBy(os => (Maybe<string>)os.ParameterSetName)
+                    .GroupBy(os => Maybe.FromReference(os.ParameterSetName))
                     .ToDictionary(
                         grp => grp.Key,
                         grp => grp.ToList());
 
-            if (!byParameterSet.ContainsKey(null)) {
-                byParameterSet[null] = new List<OptionSpec>();
+            if (!byParameterSet.ContainsKey(Maybe<string>.Nothing)) {
+                byParameterSet[Maybe<string>.Nothing] = new List<OptionSpec>();
             }
 
             // the byPosition lists are built per-paramter-set since positions
@@ -81,8 +81,8 @@ namespace CommandLine.Core {
                         ParameterSet = ps,
                         Options =
                             ps.HasValue ?
-                                byParameterSet[null].Concat(byParameterSet[ps]) :
-                                byParameterSet[null] })
+                                byParameterSet[Maybe<string>.Nothing].Concat(byParameterSet[ps]) :
+                                byParameterSet[Maybe<string>.Nothing] })
                     .ToDictionary(
                         ps => ps.ParameterSet,
                         ps => ps.Options

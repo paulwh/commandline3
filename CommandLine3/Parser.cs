@@ -221,7 +221,7 @@ namespace CommandLine {
         /// more option, or errors representing unhandled or missing tokens.
         /// </summary>
         internal IEnumerable<Either<Error, OptionValue>> HandleTokens(OptionLookup optionSpecs, IList<Token> tokens) {
-            string parameterSet = null;
+            var parameterSet = Maybe<string>.Nothing;
             // Pass #1 resolve the parameter set
             foreach (var token in tokens) {
                 OptionSpec option = null;
@@ -233,7 +233,7 @@ namespace CommandLine {
                         break;
                 }
                 if (option != null && option.ParameterSetName != null) {
-                    parameterSet = option.ParameterSetName;
+                    parameterSet = Maybe.Just(option.ParameterSetName);
                     // don't bother checking for conflicts, we'll deal with
                     // that later.
                     break;

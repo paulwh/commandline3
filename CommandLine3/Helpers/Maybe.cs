@@ -1,8 +1,26 @@
 ﻿using System;
 
 namespace CommandLine.Helpers {
-    internal struct Maybe<T> {
-        public static readonly Maybe<T> Nothing = new Maybe<T>();
+    public static class Maybe {
+        public static Maybe<T> Just<T>(T value) {
+            return new Maybe<T>(value);
+        }
+
+        public static Maybe<T> FromReference<T>(T value) where T : class {
+            return value != null ? new Maybe<T>(value) : Maybe<T>.Nothing;
+        }
+
+        public static Maybe<T> FromNullable<T>(T? value) where T : struct {
+            return value.HasValue ? new Maybe<T>(value.Value) : Maybe<T>.Nothing;
+        }
+
+        public static Maybe<T> Nothing<T>() {
+            return Maybe<T>.Nothing;
+        }
+    }
+
+    public struct Maybe<T> {
+        public static readonly Maybe<T> Nothing = default(Maybe<T>);
 
         private bool hasValue;
         private T _value;
@@ -30,6 +48,10 @@ namespace CommandLine.Helpers {
             _value = value;
         }
 
+        public T GetValueOrDefault(T defaultValue) {
+            return this.hasValue ? this.Value : defaultValue;
+        }
+
         public override int GetHashCode() {
             return this.hasValue ? this._value.GetHashCode() : 0;
         }
@@ -38,7 +60,7 @@ namespace CommandLine.Helpers {
             if (obj is Maybe<T>) {
                 var other = (Maybe<T>)obj;
                 if (this.hasValue) {
-                    return other.hasValue && this.Value.Equals(other._value);
+                    return other.hasValue && Object.Equals(this.Value, other._value);
                 } else {
                     return !other.hasValue;
                 }
@@ -49,10 +71,6 @@ namespace CommandLine.Helpers {
 
         public override string ToString() {
             return this.hasValue ? this._value.ToString() : String.Empty;
-        }
-
-        public static implicit operator Maybe<T>(T value) {
-            return value == null ? Maybe<T>.Nothing : new Maybe<T>(value);
         }
     }
 }
