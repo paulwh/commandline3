@@ -60,7 +60,7 @@ namespace CommandLine {
         }
 
         private ParserResult<T> ParseArgumentsImpl<T>(T instance, IEnumerable<string> args, VerbSpec verb = null) {
-            var optionLookup = OptionLookup.ForType<T>();
+            var optionLookup = OptionLookup.ForType<T>(this.settings);
             var handlerResults = HandleTokens(
                 optionLookup,
                 this.Tokenize(args).ToList()
@@ -617,7 +617,7 @@ namespace CommandLine {
         }
 
         private IList<OptionSpec> GetOptionsForVerb(VerbSpec selectedVerb) {
-            return OptionLookup.ForType(selectedVerb.VerbType).All;
+            return OptionLookup.ForType(selectedVerb.VerbType, settings).All;
         }
 
         private MethodInfo ParseVerbArgumentsMethod =

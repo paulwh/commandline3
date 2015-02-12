@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Resources;
@@ -46,6 +47,43 @@ namespace CommandLine {
                 return this.CaseSensitive ?
                     StringComparer.Ordinal :
                     StringComparer.OrdinalIgnoreCase;
+            }
+        }
+
+        internal IEqualityComparer<char> CharacterComparer {
+            get {
+                return this.CaseSensitive ?
+                    CharComparer.Ordinal :
+                    CharComparer.OrdinalIgnoreCase;
+            }
+        }
+
+        private class CharComparer : EqualityComparer<char>, IComparer<char> {
+            public static CharComparer Ordinal = new CharComparer();
+            public static readonly CharComparer OrdinalIgnoreCase =
+                new CharComparer { ignoreCase = true };
+
+            private bool ignoreCase;
+
+            private CharComparer() {
+            }
+
+            public int Compare(char x, char y) {
+                return ignoreCase ?
+                    Char.ToLowerInvariant(x).CompareTo(Char.ToLowerInvariant(y)) :
+                    x.CompareTo(y);
+            }
+
+            public override bool Equals(char x, char y) {
+                return ignoreCase ?
+                    Char.ToLowerInvariant(x).Equals(Char.ToLowerInvariant(y)) :
+                    x.Equals(y);
+            }
+
+            public override int GetHashCode(char obj) {
+                return ignoreCase ?
+                    Char.ToLowerInvariant(obj).GetHashCode() :
+                    obj.GetHashCode();
             }
         }
 

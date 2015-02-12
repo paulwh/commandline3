@@ -40,13 +40,13 @@ namespace CommandLine.Core {
             }
         }
 
-        public static OptionLookup ForType(Type type) {
-            return (OptionLookup)ForTypeMethod.MakeGenericMethod(type).Invoke(null, new object[0]);
+        public static OptionLookup ForType(Type type, ParserSettings settings) {
+            return (OptionLookup)ForTypeMethod.MakeGenericMethod(type).Invoke(null, new object[] { settings });
         }
 
         private static readonly MethodInfo ForTypeMethod =
-            ReflectionHelper.GetGenericMethodDefinition(() => ForType<object>());
-        public static OptionLookup ForType<T>() {
+            ReflectionHelper.GetGenericMethodDefinition(() => ForType<object>(null));
+        public static OptionLookup ForType<T>(ParserSettings settings) {
             var optionSpecs =
                 typeof(T)
                     .GetProperties()
@@ -54,12 +54,12 @@ namespace CommandLine.Core {
                     .ToList();
 
             var longNameIndex =
-                optionSpecs.ToDictionary(os => os.LongName);
+                optionSpecs.ToDictionary(os => os.LongName, settings.StringComparer);
 
             var shortNameIndex =
                 optionSpecs
                     .Where(os => os.ShortName.HasValue)
-                    .ToDictionary(os => os.ShortName.Value);
+                    .ToDictionary(os => os.ShortName.Value, settings.CharacterComparer);
 
             var byParameterSet =
                 optionSpecs
