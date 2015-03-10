@@ -9,8 +9,7 @@ using CommandLine.Text;
 namespace CommandLine {
     public class Parser {
         private ParserSettings settings;
-        private bool hasShortFormPrefix;
-        private char shortFormPrefix;
+        private char? shortFormPrefix;
         private int longFormPrefixLength;
 
         public static Parser Default {
@@ -19,16 +18,19 @@ namespace CommandLine {
             }
         }
 
+        public bool HasShortFormPrefix { 
+            get { return this.shortFormPrefix.HasValue; } 
+        }
+
         public Parser(ParserSettings settings) {
             if (settings == null) {
                 throw new ArgumentNullException("settings");
             }
 
-            this.hasShortFormPrefix = settings.ShortOptionPrefix.HasValue;
-            this.shortFormPrefix = settings.ShortOptionPrefix.Value;
+            this.shortFormPrefix = settings.ShortOptionPrefix;
             this.longFormPrefixLength = settings.LongOptionPrefix.Length;
 
-            if (this.hasShortFormPrefix &&
+            if (this.HasShortFormPrefix &&
                 settings.LongOptionPrefix == this.shortFormPrefix.ToString()) {
                 throw new ArgumentException(
                     "The sort option prefix and long option prefix cannot be the same.",
@@ -650,7 +652,7 @@ namespace CommandLine {
                             arg.Substring(this.longFormPrefixLength)
                         );
                     }
-                } else if (this.hasShortFormPrefix && arg.StartsWith(this.shortFormPrefix.ToString())) {
+                } else if (this.HasShortFormPrefix && arg.StartsWith(this.shortFormPrefix.ToString())) {
                     foreach (var c in arg.Skip(1)) {
                         yield return new Token(TokenType.ShortOption, arg, c.ToString());
                     }
