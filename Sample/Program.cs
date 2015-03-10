@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,35 +49,35 @@ namespace Sample {
 
     [Verb("foo", HelpText = "The foo command")]
     public class FooCommand {
-        [Option("switch", 's', HelpText = "An example of a switch")]
+        [Option('s', "switch", HelpText = "An example of a switch")]
         public bool Switch { get; set; }
 
-        [Option("required", 'r', Required = true, HelpText = "An example of a required argument")]
+        [Option('r', "required", Required = true, HelpText = "An example of a required argument")]
         public string Required { get; set; }
 
-        [Option("collection", 'c', 1, HelpText = "A positional collection parameter can be used to collect all remaining arguments.")]
+        [Option('c', "collection", 1, HelpText = "A positional collection parameter can be used to collect all remaining arguments.")]
         public string[] Collection { get; set; }
 
     }
 
     [Verb("bar", HelpText = "The bar command")]
     public class BarCommand {
-        [Option("ordered", 'o', Required = true, ParameterSetName = "ordered")]
+        [Option('o', "ordered", Required = true, ParameterSetName = "ordered")]
         public bool Ordered { get; set; }
 
-        [Option("catchall", 'c', Required = true, ParameterSetName = "catchall")]
+        [Option('c', "catchall", Required = true, ParameterSetName = "catchall")]
         public bool CatchAll { get; set; }
 
-        [Option("generic", 'g', 1, Required = true)]
+        [Option('g', "generic", 1, Required = true)]
         public int Generic { get; set; }
 
-        [Option("first", 'f', 2, ParameterSetName = "ordered")]
+        [Option('f', "first", 2, ParameterSetName = "ordered")]
         public string First { get; set; }
 
-        [Option("second", 's', 3, ParameterSetName = "ordered")]
+        [Option('s', "second", 3, ParameterSetName = "ordered")]
         public string Second { get; set; }
 
-        [Option("all", 'a', 2, ParameterSetName = "catchall")]
+        [Option('a', "all", 2, ParameterSetName = "catchall")]
         public IList<string> All { get; set; }
     }
 }

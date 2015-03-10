@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -14,11 +14,6 @@ namespace CommandLine.Core {
         public string HelpText { get; private set; }
         public int? Position { get; private set; }
         public PropertyInfo Property { get; private set; }
-
-        private Lazy<IOptionValueValidator> validator;
-        public IOptionValueValidator Validator {
-            get { return this.validator.Value; }
-        }
 
         private Lazy<IOptionValueDeserializer> deserializer;
         public IOptionValueDeserializer Deserializer {
