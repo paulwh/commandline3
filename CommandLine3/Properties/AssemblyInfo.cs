@@ -1,11 +1,11 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("CommandLine")]
 [assembly: AssemblyDescription("CommandLine Parsing Library for .Net")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Paul Wheeler")]
 [assembly: AssemblyProduct("CommandLine3")]
 [assembly: AssemblyCopyright("Copyright © Paul Wheeler 2015")]
 [assembly: AssemblyTrademark("")]
