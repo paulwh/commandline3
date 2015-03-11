@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CommandLine.Text {
@@ -19,8 +20,16 @@ namespace CommandLine.Text {
         public string SubIndent { get; set; }
 
         static HelpTextSection() {
-            DefaultAutoWrap = Math.Min(Console.WindowWidth, 120);
+            // Detecting a console window
+            if (GetConsoleWindow() == IntPtr.Zero) {
+                DefaultAutoWrap = 80;
+            } else {
+                DefaultAutoWrap = Math.Min(Console.WindowWidth, 120);
+            }
         }
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetConsoleWindow();
 
         public void Render(TextWriter writer) {
             foreach (var line in this.RenderLines().SelectMany(line => line.Split('\n'))) {
