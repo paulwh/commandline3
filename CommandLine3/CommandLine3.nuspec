@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>CommandLine3</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/paulwh/commandline3/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/paulwh/commandline3/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>CommandLine parser</tags>
+  </metadata>
+  <files>
+  </files>
+</package>
