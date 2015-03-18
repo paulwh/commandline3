@@ -44,6 +44,10 @@ namespace CommandLine.Core {
                 this.Position = attribute.Position;
             }
 
+            if (attribute.Deserializer != null) {
+                this.deserializer = new Lazy<IOptionValueDeserializer>(() => (IOptionValueDeserializer) Activator.CreateInstance(attribute.Deserializer));
+            }
+
             if (this.LongName == null) {
                 this.LongName = property.Name;
             }
