@@ -12,7 +12,7 @@
     <description>$description$</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2015</copyright>
-    <tags>CommandLine parser</tags>
+    <tags>CommandLine parser arguments</tags>
   </metadata>
   <files>
   </files>
